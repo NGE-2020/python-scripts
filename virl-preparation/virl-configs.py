@@ -1,6 +1,11 @@
 import getpass
 from time import sleep
 import paramiko
+from ncclient import manager
+from ncclient.transport.errors import AuthenticationError, SessionCloseError, SSHError, SSHUnknownHostError, NetconfFramingError
+import json
+from pprint import pprint
+import xmltodict
 import requests
 
 def virl_device_data():
@@ -17,26 +22,30 @@ def virl_device_data():
     return(finaldata)
 
 def configure_ip_address(device_info,username,password):
-    requests.packages.urllib3.disable_warnings()
 
     for device_list in device_info:
         mgmt_ip = device_list[3]
         nodename = device_list[0]
 
-        headers = {'Content-Type': 'application/yang-data+json', 'Accept': 'application/yang-data+json'}
-        url = "https://{h}/restconf/data/Cisco-IOS-XE-native:native".format(h=mgmt_ip)
+        netconf_manager = manager.connect(host=mgmt_ip,username=username,password=password,hostkey_verify=False,allow_agent=False,look_for_keys=False)
 
-        response = requests.get(url, auth=(username, password),
-        headers=headers, verify=False)
+        try:
+            running_config = netconf_manager.get_config('running')
 
-        print(response.text)
-        sleep(5)
+        except:
+
+        raise SSHError:
+            print("Could not open socket")
+
+        finally:
+            responsejson = xmltodict.parse(str(running_config))
+            pprint(responsejson['rpc-reply']['data']['native']['interface'])
+            netconf_manager.close_session()
 
 
 if __name__ == '__main__':
-
     user = input("Enter your username: ")
-    pswd = getpass.getpass()
+    pswd = getpass.getpass(prompt='Enter your password: ', stream=None)
 
     device_info = virl_device_data()
 
