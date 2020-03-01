@@ -1,12 +1,10 @@
 import getpass
 from time import sleep
-import paramiko
 from ncclient import manager
-from ncclient.transport.errors import AuthenticationError, SessionCloseError, SSHError, SSHUnknownHostError, NetconfFramingError
-import json
 from pprint import pprint
 import xmltodict
 import requests
+
 
 def virl_device_data():
     response = requests.get('http://10.10.20.160:19399/roster/rest/', auth=('guest', 'guest'))
@@ -22,7 +20,6 @@ def virl_device_data():
     return(finaldata)
 
 def configure_ip_address(device_info,username,password):
-
     for device_list in device_info:
         mgmt_ip = device_list[3]
         nodename = device_list[0]
@@ -30,16 +27,23 @@ def configure_ip_address(device_info,username,password):
         netconf_manager = manager.connect(host=mgmt_ip,username=username,password=password,hostkey_verify=False,allow_agent=False,look_for_keys=False)
 
         try:
-            running_config = netconf_manager.get_config('running')
+            get = netconf_manager.get(filter=('subtree', "<interfaces-state/>"))
+            response_dic = xmltodict.parse(str(get))
+            interfaces = response_dic['rpc-reply']['data']['interfaces-state']['interface'][0]['name']
+            pprint(interfaces)
 
-        except:
+            get = netconf_manager.get(filter=('subtree', "<Cisco-IOS-XE-lldp-oper/>"))
+            response_dic = xmltodict.parse(str(get))
+            lldp = response_dic
+            pprint(lldp)
 
-        raise SSHError:
-            print("Could not open socket")
+            get_config = netconf_manager.get_config(filter=('subtree', "<Cisco-IOS-XE-lldp-oper/>"))
+            response_dic = xmltodict.parse(str(get))
+            lldp = response_dic
+            pprint(lldp)
 
+            sleep(3)
         finally:
-            responsejson = xmltodict.parse(str(running_config))
-            pprint(responsejson['rpc-reply']['data']['native']['interface'])
             netconf_manager.close_session()
 
 
