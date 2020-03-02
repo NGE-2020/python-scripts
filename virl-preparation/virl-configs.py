@@ -19,7 +19,7 @@ def virl_device_data():
 
     return(finaldata)
 
-def configure_ip_address(device_info,username,password):
+def configure_ip_address(device_info, username, password):
     for device_list in device_info:
         mgmt_ip = device_list[3]
         nodename = device_list[0]
@@ -29,18 +29,18 @@ def configure_ip_address(device_info,username,password):
         try:
             get = netconf_manager.get(filter=('subtree', "<interfaces-state/>"))
             response_dic = xmltodict.parse(str(get))
-            interfaces = response_dic['rpc-reply']['data']['interfaces-state']['interface'][0]['name']
+            interfaces = response_dic['rpc-reply']['data']['interfaces-state']['interface'][0]
             pprint(interfaces)
 
-            get = netconf_manager.get(filter=('subtree', "<Cisco-IOS-XE-lldp-oper/>"))
-            response_dic = xmltodict.parse(str(get))
-            lldp = response_dic
-            pprint(lldp)
+            # get = netconf_manager.get_config('running')
+            # response_dic = xmltodict.parse(str(get))
+            # lldp = response_dic
+            # pprint(lldp)
 
-            get_config = netconf_manager.get_config(filter=('subtree', "<Cisco-IOS-XE-lldp-oper/>"))
-            response_dic = xmltodict.parse(str(get))
-            lldp = response_dic
-            pprint(lldp)
+            # get_config = netconf_manager.get_config('running'(filter=('subtree', "<Cisco-IOS-XE-lldp-oper/>")))
+            # response_dic = xmltodict.parse(str(get))
+            # lldp = response_dic
+            # pprint(lldp)
 
             sleep(3)
         finally:
@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     device_info = virl_device_data()
 
-    configure_ip_address(device_info,user,pswd)
+    configure_ip_address(device_info, user, pswd)
