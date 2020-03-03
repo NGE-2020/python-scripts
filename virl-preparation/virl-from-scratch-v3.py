@@ -27,13 +27,12 @@ def test_ssh_con(address, nodename, username, password):
         ssh_client.connect(hostname=address, username=username, password=password, look_for_keys=False, allow_agent=False)
         send_command = ssh_client.invoke_shell()
         send_command.send("sh ip int br\n ")
+        ssh_client.close()
         return('true')
     except ConnectionRefusedError:
         pass
     except:
         return('false')
-    finally:
-        ssh_client.close()
 
 def test_netconf(mgmt_ip, username, password):
     try:
@@ -58,7 +57,7 @@ def ssh_config(mgmt_ip, nodename, nodetype, username, password):
         tn.write(b"   conf t\n   crypto key generate rsa modulus 2048\n")
         time.sleep(1)
         tn.write(b"   line vty 0 4 \n   no password cisco\n   no login authentication\n   privilege level 15\n")
-        tn.write(b"   ip domain-name ngn_richo.com \n  aaa new-model\n  lldp run \n   aaa new-model\n   exit\n   wr\n")
+        tn.write(b"   ip domain-name ngn_richo.com \n  aaa new-model\n  lldp run \n   cdp run \n  aaa new-model\n   exit\n   wr\n")
         time.sleep(1)
         tn.write(b"   exit\n   exit\n")
         tn.close()
@@ -76,14 +75,16 @@ def netconf_config(mgmt_ip, nodename, nodetype, username, password):
             ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh_client.connect(hostname=mgmt_ip, port=22, username=username, password=password, look_for_keys=False, allow_agent=False)
             send_command = ssh_client.invoke_shell()
-            send_command.send("conf t\n ")
+            send_command.send("  conf t\n ")
             time.sleep(1)
-            send_command.send("netconf-yang \n")
+            send_command.send("  netconf-yang \n")
             time.sleep(1)
-            send_command.send("yes\n")
-            time.sleep(1)
-            send_command.send("ip http secure-server\n aaa authentication login default local\n aaa authorization exec default local\n")
-            send_command.send("restconf\n ")
+            send_command.send("  yes\n")
+            time.sleep(30)
+            send_command.send("  netconf-yang feature candidate-datastore \n")
+            time.sleep(3)
+            send_command.send("  ip http secure-server\n aaa authentication login default local\n aaa authorization exec default local\n")
+            send_command.send("  restconf\n ")
             time.sleep(1)
             send_command.send("end\n ")
             send_command.send("wr\n ")
@@ -102,7 +103,13 @@ def netconf_prepare(device_info, user, pswd):
         nodetype = device_list[1]
         netconf_veredict = test_netconf(mgmt_ip, user, pswd)
 
-        if netconf_veredict == 'false': netconf_config(mgmt_ip, nodename, nodetype, user, pswd)
+        if netconf_veredict == 'false':
+            netconf_config(mgmt_ip, nodename, nodetype, user, pswd)
+            print("Final test for Netconf in " , nodename)
+
+            netconf_veredict = test_netconf(mgmt_ip, user, pswd)
+            if netconf_veredict == 'true': print("Netconf is now configured in ", nodename)
+            else: print("\nThere is something wrong with Netconf in {node}, please review it with @richo".format(node=nodename))
         else: print("\nNetconf is properly configured in ", nodename)
 
 def ssh_prepare(device_info, user, pswd):
@@ -127,7 +134,13 @@ def main():
     pswd = getpass.getpass(prompt='Enter your password: ', stream=None)
     device_info = virl_device_data()
     ssh_prepare(device_info, user, pswd)
-    netconf_prepare(device_info, user, pswd)
+    netconf = input("Would you like to configure netconf? ")
+    if netconf == (yes or YES or Yes or Y or y):
+        netconf_prepare(device_info, user, pswd)
+    elif ssh == (No or no or NO or N or n):
+        print('Got it, thanks for using this script')
+    else:
+        print('The answer wasn correct, the script will stop')
 
 if __name__ == '__main__':
     main()
