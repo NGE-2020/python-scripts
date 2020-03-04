@@ -1,19 +1,26 @@
+# import requests
+# from bs4 import BeautifulSoup
+# import bs4
+#
+# result = requests.get("https://finance.yahoo.com/quote/MCD?p=MCD")
+#
+# soup = bs4.BeautifulSoup(result.text, 'xml')
+#
+# actual_price = soup.find('div',{'class':'D(ib) Mend(20px)'})
+#
+# print(actual_price)
+
 import requests
 from bs4 import BeautifulSoup
-from pprint import pprint
-import xmltodict
 
-result = requests.get("https://finance.yahoo.com/quote/MCD?p=MCD&.tsrc=fin-srch")
+ticker = 'AAPL'
+url = 'https://finance.yahoo.com/quote/' + ticker
 
-print(result.status_code)
+res = requests.get( url )
+html = res.text
 
-src = result.content
+soup = BeautifulSoup( html, 'html.parser' )
+market_cap_elem = soup.find( 'td', { 'data-test' : 'ONE_YEAR_TARGET_PRICE-value' } )
+market_cap = market_cap_elem.text
 
-soup = BeautifulSoup(src, 'lxml')
-# print(soup.prettify())
-
-# match = soup.title.text
-# print(match)
-
-match = soup.find('div', class_='data-reactid')
-print(match)
+print(market_cap)
