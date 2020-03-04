@@ -1,15 +1,3 @@
-# import requests
-# from bs4 import BeautifulSoup
-# import bs4
-#
-# result = requests.get("https://finance.yahoo.com/quote/MCD?p=MCD")
-#
-# soup = bs4.BeautifulSoup(result.text, 'xml')
-#
-# actual_price = soup.find('div',{'class':'D(ib) Mend(20px)'})
-#
-# print(actual_price)
-
 import requests
 from bs4 import BeautifulSoup
 

@@ -4,7 +4,8 @@ import yfinance as yf
 msft = yf.Ticker("TSLA")
 
 # get stock info
-#pprint(msft.info)
+stock_last_close = msft.info['previousClose']
+print(stock_last_close)
 
 # get historical market data
 #hist = msft.history(period="5y")
