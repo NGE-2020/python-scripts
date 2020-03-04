@@ -134,13 +134,7 @@ def main():
     pswd = getpass.getpass(prompt='Enter your password: ', stream=None)
     device_info = virl_device_data()
     ssh_prepare(device_info, user, pswd)
-    netconf = input("Would you like to configure netconf? ")
-    if netconf == (yes or YES or Yes or Y or y):
-        netconf_prepare(device_info, user, pswd)
-    elif ssh == (No or no or NO or N or n):
-        print('Got it, thanks for using this script')
-    else:
-        print('The answer wasn correct, the script will stop')
+    netconf_prepare(device_info, user, pswd)
 
 if __name__ == '__main__':
     main()

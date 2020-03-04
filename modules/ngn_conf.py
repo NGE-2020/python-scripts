@@ -1,3 +1,4 @@
+
 import napalm
 from netmiko import ConnectHandler
 
@@ -48,16 +49,13 @@ def netmiko_xe_config_cmds(command_list, ip, user, pswd, port=22):
     try:
         net_connect = ConnectHandler(device_type='cisco_ios', host=ip, username=user, password=pswd, port=port)
         output = net_connect.send_config_set(command_list)
-
-    except netmiko.NetMikoTimeoutException:
-        print('valio pito')
-        
     finally:
         return(output)
 
-# port = 8181
-# ip = "ios-xe-mgmt-latest.cisco.com"
-# user = "developer"
-# pswd = "C1sco12345"
-# command_list = ['cdp run', 'lldp run']
-# print(netmiko_xe_get_lldp_neigh(ip, user, pswd, port))
+port = 8181
+ip = "ios-xe-mgmt-latest.cisco.com"
+user = "developer"
+pswd = "C1sco12345"
+command_list = ['cdp run', 'lldp run']
+print(netmiko_xe_get_lldp_neigh(ip, user, pswd, port))
+
