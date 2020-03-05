@@ -42,7 +42,10 @@ def get_stock_list():
                     stocks.add(row[0])
     return(stocks)
 
-def one_y_premonition_yahoo(stock):
+def one_y_premonition_yahoo(stock, premo_dic):
+
+    premo = premo_dic
+
     ticker = stock
     url = 'https://finance.yahoo.com/quote/' + ticker
 
@@ -56,9 +59,26 @@ def one_y_premonition_yahoo(stock):
         market_cap = market_cap_elem.text
         market_cap = market_cap.replace(',','')
         market_cap = market_cap.replace('$','')
-        return(market_cap)
+        premo.update({stock:{'premo':market_cap}})
     else:
-        return('false')
+        premo.update({stock:{'premo':'false'}})
+
+    print(premo)
+    return(premo)
+
+def premonition_threaths(all_stocks, premo_dic, function):
+    threaths = []
+
+    for stock in all_stocks:
+        try:
+            th = threading.Thread(target=function, args=(stock, premo_dic))
+            th.start()
+
+        finally:
+            threaths.append(th)
+
+    for tr in threaths:
+        tr.join()
 
 def stock_today_ameritrade(stock):
     ticker = stock
@@ -78,6 +98,20 @@ def stock_today_ameritrade(stock):
         return(market_cap)
     else:
         return('false')
+
+def actual_threaths(all_stocks, premo_dic, function):
+    threaths = []
+
+    for stock in all_stocks:
+        try:
+            th = threading.Thread(target=function, args=(stock, premo_dic))
+            th.start()
+
+        finally:
+            threaths.append(th)
+
+    for tr in threaths:
+        tr.join()
 
 def get_stock_data(all_stocks):
     stock_dic = {}
@@ -103,7 +137,13 @@ def main():
 
     all_stocks = get_stock_list()
 
-    top20_list = get_stock_data(all_stocks)
+    # top20_list = get_stock_data(all_stocks)
+
+    dic = {}
+
+    premo_dic = premonition_threaths(all_stocks, dic, one_y_premonition_yahoo)
+
+    stock_dic = actual_threaths(all_stocks, premo_dic, stock_today_ameritrade)
 
     # for stock in top20_list:
     #     """
