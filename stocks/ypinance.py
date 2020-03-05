@@ -1,11 +1,12 @@
 from pprint import pprint
 import yfinance as yf
 
-msft = yf.Ticker("TSLA")
+msft = yf.Ticker("BWL.A")
 
 # get stock info
 stock_last_close = msft.info['previousClose']
 print(stock_last_close)
+print(msft)
 
 # get historical market data
 #hist = msft.history(period="5y")
@@ -19,4 +20,3 @@ print(stock_last_close)
 
 # show analysts recommendations
 #print(msft.recommendations)
-
