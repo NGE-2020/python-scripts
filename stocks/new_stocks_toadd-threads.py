@@ -1,8 +1,10 @@
 import requests
+import csv
 import json
 from bs4 import BeautifulSoup
 from pprint import pprint
 import yfinance as yf
+import threading
 
 def get_stock_list():
     stocks = []
@@ -18,54 +20,63 @@ def get_stock_list():
         elif "." in stocks:
             stock = stock.replace(".", "-")
             clean_data.append(stock)
-        else: clean_data.append(stock)
+        else:
+            clean_data.append(stock)
 
-    clean_data = clean_data[0:20]
+    clean_data = clean_data[:10]
     print("Will work with ", len(clean_data), "stocks\n")
     return(clean_data)
 
-def grow_measurement(all_stocks):
+def grow_measurement(stock, percetage):
     interesting_data = {}
-    percetage = input("Give me the percentage for one year grow accepted: ")
-    print('\n')
-    counter = 0
-    issue_counter = 0
+    try:
+        info = yf.Ticker(stock)
+        oney_hist = info.history(period="1y")
+        oney_hist_string = str(oney_hist)
+        oney_hist_list1 = oney_hist_string.split('\n')
+        oney_hist_list2 = oney_hist_list1[2].split(' ')
+        last_year =  float(oney_hist_list2[4])
+
+        stock_last_close = info.info['previousClose']
+
+        anual_grow = ((stock_last_close*100)/last_year) - 100
+        anual_grow = round(anual_grow, 2)
+        if anual_grow >= float(percetage):
+            interesting_data.update({stock:{'anual_grow':anual_grow}})
+            interesting_data[stock].update({'actual':stock_last_close})
+
+    except IndexError:
+        # print('valio pito')
+        pass
+    except ValueError:
+        # print('valio mas pito')
+        pass
+    except ImportError:
+        # print('valio mucho mas pito')
+        pass
+    except urllib.error.HTTPError:
+        # print('valio mucho mas pito')
+        pass
+
+    with open("stock_data.json", "r+") as file:
+        data = json.load(file)
+        data.update(interesting_data)
+        file.seek(0)
+        json.dump(data, file)
+
+def grow_threaths(all_stocks, percetage, function):
+    threaths = []
+
     for stock in all_stocks:
-        counter = counter + 1
-        print("\n====== Working with stock {stock} (stock number {num})======".format(stock=stock, num=counter))
         try:
-            info = yf.Ticker(stock)
-            oney_hist = info.history(period="1y")
-            oney_hist_string = str(oney_hist)
-            oney_hist_list1 = oney_hist_string.split('\n')
-            oney_hist_list2 = oney_hist_list1[2].split(' ')
-            last_year =  float(oney_hist_list2[4])
+            th = threading.Thread(target=function, args=(stock, percetage))
+            th.start()
 
-            stock_last_close = info.info['previousClose']
+        finally:
+            threaths.append(th)
 
-            anual_grow = ((stock_last_close*100)/last_year) - 100
-            anual_grow = round(anual_grow, 2)
-            if anual_grow >= float(percetage):
-                interesting_data.update({stock:{'anual_grow':anual_grow}})
-                interesting_data[stock].update({'actual':stock_last_close})
-
-        except IndexError:
-            issue_counter = issue_counter + 1
-            pass
-        except ValueError:
-            issue_counter = issue_counter + 1
-            pass
-        except ImportError:
-            issue_counter = issue_counter + 1
-            pass
-        except NameError:
-            issue_counter = issue_counter + 1
-            pass
-        else:
-            pass
-
-    with open("stock_data.json", 'w') as outfile:
-        outfile.write(json.dumps(interesting_data))
+    for tr in threaths:
+        tr.join()
 
 def one_y_premonition_yahoo():
     interesting_data = {}
@@ -86,28 +97,24 @@ def one_y_premonition_yahoo():
             market_cap = market_cap.replace('$','')
             interesting_data[key].update({'premo':market_cap})
 
-    # with open("stock_data_final.json", 'w') as outfile:
-    #     outfile.write(json.dumps(interesting_data))
-
-    with open("stock_data_final.json", "r+") as file:
+    with open("stock_data.json", "r+") as file:
         data = json.load(file)
         data.update(interesting_data)
         file.seek(0)
         json.dump(data, file)
 
 def main():
-
     all_stocks = get_stock_list()
 
-    grow_measurement(all_stocks)
+    percetage = input("Give me the percentage for one year grow accepted: ")
+    print('\n')
+    grow_threaths(all_stocks, percetage, grow_measurement)
 
     one_y_premonition_yahoo()
 
-    with open("stock_data_final.json", 'r') as outfile:
+    with open("stock_data.json", 'r') as outfile:
         interesting_data = json.loads(outfile.read())
         pprint(interesting_data)
-
-    # top20_list = get_stock_data(all_stocks)
 
     # for stock in top20_list:
     #     """

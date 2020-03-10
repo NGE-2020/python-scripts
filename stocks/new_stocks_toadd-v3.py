@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from pprint import pprint
 import yfinance as yf
 
-def get_stock_list():
+def grow_measurement():
     stocks = []
     with open('stock_data.txt') as stock_string:
         stocks = stock_string.read()
@@ -22,15 +22,12 @@ def get_stock_list():
 
     clean_data = clean_data[0:20]
     print("Will work with ", len(clean_data), "stocks\n")
-    return(clean_data)
 
-def grow_measurement(all_stocks):
     interesting_data = {}
     percetage = input("Give me the percentage for one year grow accepted: ")
     print('\n')
     counter = 0
-    issue_counter = 0
-    for stock in all_stocks:
+    for stock in clean_data:
         counter = counter + 1
         print("\n====== Working with stock {stock} (stock number {num})======".format(stock=stock, num=counter))
         try:
@@ -50,22 +47,30 @@ def grow_measurement(all_stocks):
                 interesting_data[stock].update({'actual':stock_last_close})
 
         except IndexError:
-            issue_counter = issue_counter + 1
+            clean_data.remove(stock)
             pass
         except ValueError:
-            issue_counter = issue_counter + 1
+            clean_data.remove(stock)
             pass
         except ImportError:
-            issue_counter = issue_counter + 1
+            clean_data.remove(stock)
             pass
         except NameError:
-            issue_counter = issue_counter + 1
+            clean_data.remove(stock)
             pass
         else:
             pass
 
+
     with open("stock_data.json", 'w') as outfile:
         outfile.write(json.dumps(interesting_data))
+
+    final_list = ""
+    for stock in clean_data:
+        final_list = final_list + "," + stock
+
+    print(len(final_list))
+    print(final_list)
 
 def one_y_premonition_yahoo():
     interesting_data = {}
@@ -96,13 +101,8 @@ def one_y_premonition_yahoo():
         json.dump(data, file)
 
 def main():
-
-    all_stocks = get_stock_list()
-
-    grow_measurement(all_stocks)
-
+    grow_measurement()
     one_y_premonition_yahoo()
-
     with open("stock_data_final.json", 'r') as outfile:
         interesting_data = json.loads(outfile.read())
         pprint(interesting_data)

@@ -208,15 +208,11 @@ import pprint
 # # List latest company news by symbol. This endpoint is only available for US companies.
 # r = requests.get('https://finnhub.io/api/v1/news/AAPL?token=')
 # pprint.pprint(r.json())
-#
-# #List latest major developments of a company going back 20 years with 12M+ data points. This data can be used to highlight the most significant events. Limit to 200 results/call for Ultimate users, and 20 results/call other plans.
-# r = requests.get('https://finnhub.io/api/v1/major-development?symbol=AAPL&token=')
-# pprint.pprint(r.json())
-#
-# #Get company's news sentiment and statistics. This endpoint is only available for US companies.
-# r = requests.get('https://finnhub.io/api/v1/news-sentiment?symbol=V&token=')
-# pprint.pprint(r.json())
-#
-#Get recent and coming earnings release.
-r = requests.get('https://finnhub.io/api/v1/calendar/earnings?bpe8rrfrh5rckeckjov0=')
+
+#List latest major developments of a company going back 20 years with 12M+ data points. This data can be used to highlight the most significant events. Limit to 200 results/call for Ultimate users, and 20 results/call other plans.
+r = requests.get('https://finnhub.io/api/v1/major-development?symbol=AAPL&token=')
 pprint.pprint(r.json())
+
+# #Get company's news sentiment and statistics. This endpoint is only available for US companies.
+# r = requests.get('https://finnhub.io/api/v1/news-sentiment?symbol=AAPL&token=')
+# pprint.pprint(r.json())
