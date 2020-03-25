@@ -10,24 +10,15 @@ def grow_measurement():
         stocks = stock_string.read()
         stocks = stocks.split(',')
 
-    clean_data = []
-    for stock in stocks:
-        if "^" in stock:
-            stock = stock.replace("^", "-")
-            clean_data.append(stock)
-        elif "." in stocks:
-            stock = stock.replace(".", "-")
-            clean_data.append(stock)
-        else: clean_data.append(stock)
-
-    clean_data = clean_data[0:20]
-    print("Will work with ", len(clean_data), "stocks\n")
+    stocks = stocks[0:20]
+    print("Will work with ", len(stocks), "stocks\n")
 
     interesting_data = {}
-    percetage = input("Give me the percentage for one year grow accepted: ")
+    percetage_grow = input("Give me the percentage for one year grow accepted: ")
+    percetage_loss = input("Give me the percentage for two months loss accepted: ")
     print('\n')
     counter = 0
-    for stock in clean_data:
+    for stock in stocks:
         counter = counter + 1
         print("\n====== Working with stock {stock} (stock number {num})======".format(stock=stock, num=counter))
         try:
@@ -38,39 +29,63 @@ def grow_measurement():
             oney_hist_list2 = oney_hist_list1[2].split(' ')
             last_year =  float(oney_hist_list2[4])
 
+            bim_hist = info.history(period="2mo")
+            bim_hist_string = str(bim_hist)
+            bim_hist_list1 = bim_hist_string.split('\n')
+            bim_hist_list2 = bim_hist_list1[2].split(' ')
+            bim =  float(bim_hist_list2[4])
+
             stock_last_close = info.info['previousClose']
+            week52_High = info.info['fiftyTwoWeekHigh']
+            ask = info.info['ask']
+            bid = info.info['bid']
 
             anual_grow = ((stock_last_close*100)/last_year) - 100
             anual_grow = round(anual_grow, 2)
-            if anual_grow >= float(percetage):
+
+            bim_loss = 100 - ((stock_last_close*100)/bim)
+            bim_loss = round(bim_loss, 2)
+
+            if anual_grow >= float(percetage_grow):
                 interesting_data.update({stock:{'anual_grow':anual_grow}})
+                interesting_data[stock].update({'bim_loss':bim_loss})
                 interesting_data[stock].update({'actual':stock_last_close})
+                interesting_data[stock].update({'week52_High':week52_High})
+                interesting_data[stock].update({'ask':ask})
+                interesting_data[stock].update({'bid':bid})
+
+            if bim_loss >= float(percetage_loss):
+                interesting_data.update({stock:{'anual_grow':anual_grow}})
+                interesting_data[stock].update({'bim_loss':bim_loss})
+                interesting_data[stock].update({'actual':stock_last_close})
+                interesting_data[stock].update({'week52_High':week52_High})
 
         except IndexError:
-            clean_data.remove(stock)
+            # clean_data.remove(stock)
             pass
         except ValueError:
-            clean_data.remove(stock)
+            # clean_data.remove(stock)
             pass
         except ImportError:
-            clean_data.remove(stock)
+            # clean_data.remove(stock)
             pass
         except NameError:
-            clean_data.remove(stock)
+            # clean_data.remove(stock)
             pass
         else:
             pass
 
+    pprint(interesting_data)
 
-    with open("stock_data.json", 'w') as outfile:
-        outfile.write(json.dumps(interesting_data))
-
-    final_list = ""
-    for stock in clean_data:
-        final_list = final_list + "," + stock
-
-    print(len(final_list))
-    print(final_list)
+    # with open("stock_data.json", 'w') as outfile:
+    #     outfile.write(json.dumps(interesting_data))
+    #
+    # final_list = ""
+    # for stock in clean_data:
+    #     final_list = final_list + "," + stock
+    #
+    # print(len(final_list))
+    # print(final_list)
 
 def one_y_premonition_yahoo():
     interesting_data = {}
@@ -102,10 +117,10 @@ def one_y_premonition_yahoo():
 
 def main():
     grow_measurement()
-    one_y_premonition_yahoo()
-    with open("stock_data_final.json", 'r') as outfile:
-        interesting_data = json.loads(outfile.read())
-        pprint(interesting_data)
+    # one_y_premonition_yahoo()
+    # with open("stock_data_final.json", 'r') as outfile:
+    #     interesting_data = json.loads(outfile.read())
+    #     pprint(interesting_data)
 
     # top20_list = get_stock_data(all_stocks)
 
